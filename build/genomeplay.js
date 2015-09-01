@@ -124,16 +124,6 @@ var WorkTeamOption = React.createClass({displayName: "WorkTeamOption",
 	}
 });
 
-function filterByWorkTeam(uids, wtFilter) {  
-	return $.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + uids.join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + uids[0]})
-		.done(function(p) {return p;})
-	.pipe(function(p) {
-		return p.Entries.filter(function(d) {
-			return d.WorkTeamID == wtFilter; 
-		});
-	});
-}
-
 
 var UserPicGame = React.createClass({displayName: "UserPicGame",	
 	getGenomeUsers: function() {
@@ -143,33 +133,31 @@ var UserPicGame = React.createClass({displayName: "UserPicGame",
 
 		$.ajax({url: this.props.url, type: 'GET',dataType: 'jsonp'})
 		.done(function(genomedata) {
-			console.log("I work?"); 
-		//	if(wtFilter !== 73) {
-				var batches = splitArray(_.pluck(genomedata.Entries, "UserID"),3);
+			var batches = splitArray(_.pluck(genomedata.Entries, "UserID"),3);
 
-				var batchRequests = batches.map(function(batch) { 
-					return Promise.resolve(
-						$.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batch.join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batch[0]}))
-						.then(function(result){ return result.Entries });});
-				
-				var ps = Promise.all(batchRequests);
-				ps.then(function (results) { 
-					var combinedResult = results[0].concat(results[1]).concat(results[2]);
-					if(wtFilter !== 73)
-					{
-						combinedResult = combinedResult.filter(function(d) { return d.WorkTeamID === wtFilter; });
-						
-					}
-
-					var randomsample =  _.sample(combinedResult, numUsers)
-					.map(function(entry) { 
-						entry.ImageSrc = "https://genome.klick.com" + entry.PhotoPath; 
-						return entry; 
-					});
+			var batchRequests = batches.map(function(batch) { 
+				return Promise.resolve(
+					$.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batch.join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batch[0]}))
+					.then(function(result){ return result.Entries });});
+			
+			var ps = Promise.all(batchRequests);
+			ps.then(function (results) { 
+				var combinedResult = results[0].concat(results[1]).concat(results[2]);
+				if(wtFilter !== 73)
+				{
+					combinedResult = combinedResult.filter(function(d) { return d.WorkTeamID === wtFilter; });
 					
-					self.setState({userdata: randomsample });
+				}
 
-				}, function (err) { console.log(err);});
+				var randomsample =  _.sample(combinedResult, numUsers)
+				.map(function(entry) { 
+					entry.ImageSrc = "https://genome.klick.com" + entry.PhotoPath; 
+					return entry; 
+				});
+				
+				self.setState({userdata: randomsample });
+
+			}, function (err) { console.log(err);});
 
 		})
 		.fail(function(xhr, status, err) {
@@ -184,7 +172,6 @@ var UserPicGame = React.createClass({displayName: "UserPicGame",
 		this.getGenomeUsers();
 	},
 	handleRefresh: function() {
-		//TODO: check filter
 		this.getGenomeUsers();
 	},
 	onFilterUpdate: function(val){ 
