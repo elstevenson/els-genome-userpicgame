@@ -151,14 +151,6 @@ var UserPicGame = React.createClass({
 					return Promise.resolve(
 						$.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batch.join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batch[0]}))
 						.then(function(result){ return result.Entries });});
-
-
-				var p1 = Promise.resolve($.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batches[0].join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batches[0][1]}))
-					.then(function(result){ return result.Entries });
-				var p2 = Promise.resolve($.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batches[1].join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batches[1][1]}))
-					.then(function(result){ return result.Entries });
-				var p3 = Promise.resolve($.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batches[2].join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batches[2][1]}))
-					.then(function(result){ return result.Entries });
 				
 				var ps = Promise.all(batchRequests);
 				ps.then(function (results) { 
@@ -196,7 +188,6 @@ var UserPicGame = React.createClass({
 		this.getGenomeUsers();
 	},
 	onFilterUpdate: function(val){ 
-console.log(this.state.workTeamFilter);	
 	       this.setState({
 			workTeamFilter: val
 	       }, function() { this.handleRefresh(); });
@@ -213,7 +204,6 @@ console.log(this.state.workTeamFilter);
 	}
 });
 	
-console.log('test');
 React.render(
   <UserPicGame url="https://genome.klick.com:443/api/User/Search" numUsers="10" wt_url="https://genome.klick.com:443/api/WorkTeam" />,
   document.getElementById('example')
