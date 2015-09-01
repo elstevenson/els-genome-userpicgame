@@ -147,6 +147,12 @@ var UserPicGame = React.createClass({
 		//	if(wtFilter !== 73) {
 				var batches = splitArray(_.pluck(genomedata.Entries, "UserID"),3);
 
+				var batchRequests = batches.map(function(batch) { 
+					return Promise.resolve(
+						$.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batch.join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batch[0]}))
+						.then(function(result){ return result.Entries });});
+
+
 				var p1 = Promise.resolve($.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batches[0].join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batches[0][1]}))
 					.then(function(result){ return result.Entries });
 				var p2 = Promise.resolve($.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batches[1].join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batches[1][1]}))
@@ -154,9 +160,9 @@ var UserPicGame = React.createClass({
 				var p3 = Promise.resolve($.ajax({url: "https://genome.klick.com:443/api/User?UserIDs=" + batches[2].join(), type: "GET", dataType: 'jsonp', jsonpCallback: 'myCallback' + batches[2][1]}))
 					.then(function(result){ return result.Entries });
 				
-				var ps = Promise.all([p1,p2,p3]);
+				var ps = Promise.all(batchRequests);
 				ps.then(function (results) { 
-					var combinedResult = results[0].concat(results[1]).concat(results[2]); console.log(combinedResult);
+					var combinedResult = results[0].concat(results[1]).concat(results[2]);
 					if(wtFilter !== 73)
 					{
 						combinedResult = combinedResult.filter(function(d) { return d.WorkTeamID === wtFilter; });
@@ -168,7 +174,7 @@ var UserPicGame = React.createClass({
 						entry.ImageSrc = "https://genome.klick.com" + entry.PhotoPath; 
 						return entry; 
 					});
-					console.log(randomsample);
+					
 					self.setState({userdata: randomsample });
 
 				}, function (err) { console.log(err);});
@@ -190,11 +196,10 @@ var UserPicGame = React.createClass({
 		this.getGenomeUsers();
 	},
 	onFilterUpdate: function(val){ 
+console.log(this.state.workTeamFilter);	
 	       this.setState({
 			workTeamFilter: val
-	       });
-
-	       this.handleRefresh();
+	       }, function() { this.handleRefresh(); });
 	},	       
 	render:function() {
 		return (
